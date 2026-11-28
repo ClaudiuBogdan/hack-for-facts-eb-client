@@ -2985,7 +2985,7 @@ msgstr "{elsewhere, plural, one {For one of those on the list, the announcements
 #~ msgstr "{euBranchCount} EU branches"
 
 #: src/features/ngos/organization/components/years-matrix.tsx:25
-#: src/features/private-companies/components/profile/company-years-band.tsx:287
+#: src/features/private-companies/components/profile/company-years-band.tsx:299
 msgid "{exact} lei"
 msgstr "{exact} lei"
 
@@ -3130,7 +3130,7 @@ msgstr "{held, plural, one {One value held back at checking is not in the sums.}
 msgid "{hidden, plural, one {Încă un județ} few {Încă # județe} other {Încă # de județe}}"
 msgstr "{hidden, plural, one {One more county} other {# more counties}}"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:191
+#: src/features/private-companies/components/profile/company-years-band.tsx:203
 msgid "{hiddenRows, plural, one {Încă un rând} few {Încă # rânduri} other {Încă # de rânduri}}"
 msgstr "{hiddenRows, plural, one {One more line} other {# more lines}}"
 
@@ -3138,7 +3138,7 @@ msgstr "{hiddenRows, plural, one {One more line} other {# more lines}}"
 msgid "{hiddenUngroupedUatCount} ungrouped UATs hidden."
 msgstr "{hiddenUngroupedUatCount} ungrouped UATs hidden."
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:204
+#: src/features/private-companies/components/profile/company-years-band.tsx:216
 msgid "{hiddenYears, plural, one {Încă un an} few {Încă # ani} other {Încă # de ani}}"
 msgstr "{hiddenYears, plural, one {One more year} other {# more years}}"
 
@@ -3727,7 +3727,7 @@ msgstr "{range} employees"
 msgid "{range} și fără an"
 msgstr "{range} and undated"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:244
+#: src/features/private-companies/components/profile/company-years-band.tsx:256
 msgid "{range}: nicio valoare disponibilă aici"
 msgstr "{range}: no value available here"
 
@@ -3886,7 +3886,7 @@ msgstr "{shownCount, plural, one {at least # reference} other {at least # refere
 #~ msgid "{staleCount} surse incarcate dar vechi"
 #~ msgstr "{staleCount} surse incarcate dar vechi"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:108
+#: src/features/private-companies/components/profile/company-years-band.tsx:120
 msgid "{statementColumns, plural, one {Un bilanț cu valori.} few {# bilanțuri cu valori, cel mai nou primul.} other {# de bilanțuri cu valori, cel mai nou primul.}}"
 msgstr "{statementColumns, plural, one {One statement with values.} other {# statements with values, newest first.}}"
 
@@ -7912,7 +7912,7 @@ msgstr "An unexpected error occurred"
 #: src/features/ngos/organization/components/profile-parts.tsx:653
 #: src/features/private-companies/components/analytics/analytics-source.tsx:31
 #: src/features/private-companies/components/hub/hub-economy-years.tsx:139
-#: src/features/private-companies/components/profile/company-years-band.tsx:230
+#: src/features/private-companies/components/profile/company-years-band.tsx:242
 #: src/features/private-companies/lib/company-profile-text.ts:642
 #: src/features/public-institutions/components/public-institutions-head.tsx:185
 msgid "ANAF"
@@ -9933,7 +9933,7 @@ msgstr "Bids are being evaluated."
 msgid "Bilanț"
 msgstr "Financial statement"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:221
+#: src/features/private-companies/components/profile/company-years-band.tsx:233
 msgctxt "the balance sheet lines of a statement"
 msgid "Bilanț"
 msgstr "Balance sheet"
@@ -9985,13 +9985,13 @@ msgstr "financial statement for {first} (ANAF)"
 msgid "bilanțul pe {first} (Ministerul Finanțelor)"
 msgstr "financial statement for {first} (Ministry of Finance)"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:259
-#: src/features/private-companies/components/profile/company-years-band.tsx:406
-#: src/features/private-companies/components/profile/company-years-band.tsx:411
+#: src/features/private-companies/components/profile/company-years-band.tsx:271
+#: src/features/private-companies/components/profile/company-years-band.tsx:444
+#: src/features/private-companies/components/profile/company-years-band.tsx:449
 msgid "Bilanțul pe {year}"
 msgstr "The {year} statement"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:259
+#: src/features/private-companies/components/profile/company-years-band.tsx:271
 msgid "Bilanțul pe {year}, de verificat"
 msgstr "The {year} statement, needs checking"
 
@@ -10064,7 +10064,7 @@ msgstr "{YEAR} financial statements, by number of employees"
 msgid "bilanțurile publicate de Ministerul Finanțelor"
 msgstr "the accounts the Ministry of Finance published"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:107
+#: src/features/private-companies/components/profile/company-years-band.tsx:119
 msgid "Bilanțurile, an cu an"
 msgstr "The statements, year by year"
 
@@ -19573,7 +19573,7 @@ msgstr "About these numbers"
 msgid "Despre aceste procente"
 msgstr "About these percentages"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:128
+#: src/features/private-companies/components/profile/company-years-band.tsx:140
 msgid "Despre aceste valori"
 msgstr "About these values"
 
@@ -20784,7 +20784,7 @@ msgstr "Only the top and bottom {phoneEdge}"
 msgid "Doar punctele în care vorbesc vorbitorii selectați. Fiecare duce la prima lor luare de cuvânt din acel punct."
 msgstr "Doar punctele în care vorbesc vorbitorii selectați. Fiecare duce la prima lor luare de cuvânt din acel punct."
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:191
+#: src/features/private-companies/components/profile/company-years-band.tsx:203
 msgid "Doar rândurile principale"
 msgstr "Only the main lines"
 
@@ -20804,7 +20804,7 @@ msgstr "Registered unemployed only: whoever does not register does not appear."
 #~ msgid "Doar tabel"
 #~ msgstr "Doar tabel"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:204
+#: src/features/private-companies/components/profile/company-years-band.tsx:216
 msgid "Doar ultimii {RECENT_YEARS} ani"
 msgstr "Only the last {RECENT_YEARS} years"
 
@@ -25581,11 +25581,15 @@ msgstr "Fișier"
 msgid "Fișier tabelar"
 msgstr "Fișier tabelar"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:377
+#: src/features/private-companies/components/profile/company-years-band.tsx:412
+msgid "Fișierele MF ale acestui an nu s-au încărcat."
+msgstr "This year's MF files did not load."
+
+#: src/features/private-companies/components/profile/company-years-band.tsx:389
 msgid "Fișierul {ordinal}"
 msgstr "File {ordinal}"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:374
+#: src/features/private-companies/components/profile/company-years-band.tsx:386
 msgid "Fișierul {ordinal} pe data.gov.ro"
 msgstr "File {ordinal} on data.gov.ro"
 
@@ -25605,7 +25609,7 @@ msgstr "The {year} file"
 msgid "Fișierul nu a putut fi făcut. Încearcă din nou."
 msgstr "The file could not be made. Try again."
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:467
+#: src/features/private-companies/components/profile/company-years-band.tsx:505
 #: src/features/private-companies/components/profile/company-years-chart.tsx:296
 msgid "Fișierul pe data.gov.ro"
 msgstr "The file on data.gov.ro"
@@ -28409,6 +28413,7 @@ msgstr "Own revenue"
 #: src/features/private-companies/components/analytics/analytics-records.tsx:130
 #: src/features/private-companies/components/hub/company-county-map.tsx:120
 #: src/features/private-companies/components/profile/company-profile-states.tsx:230
+#: src/features/private-companies/components/profile/company-years-band.tsx:414
 #: src/features/procurement/components/analytics/analytics-answer.tsx:353
 #: src/features/public-institutions/components/public-institutions-breakdown.tsx:231
 #: src/features/public-institutions/components/public-institutions-figures.tsx:96
@@ -28452,6 +28457,7 @@ msgstr "Încearcă un termen mai scurt sau elimină un filtru."
 msgid "Încearcă:"
 msgstr "Try:"
 
+#: src/features/private-companies/components/profile/company-years-band.tsx:414
 #: src/features/legal/components/hub/legislation-hub.tsx:200
 #~ msgid "Începe de aici"
 #~ msgstr "Start here"
@@ -28508,7 +28514,7 @@ msgstr "Close"
 msgid "Închide {0}"
 msgstr "Close {0}"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:426
+#: src/features/private-companies/components/profile/company-years-band.tsx:464
 msgid "Închide bilanțul pe {year}"
 msgstr "Close the {year} statement"
 
@@ -29643,7 +29649,7 @@ msgctxt "CAEN Rev.3 division"
 msgid "Intermedieri financiare, cu excepţia activităţilor de asigurări şi ale fondurilor de pensii"
 msgstr "Financial service activities, except insurance and pension funding"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:467
+#: src/features/private-companies/components/profile/company-years-band.tsx:505
 #: src/features/private-companies/components/profile/company-years-chart.tsx:296
 msgid "Interoghează ANAF pentru {year}"
 msgstr "Query ANAF for {year}"
@@ -31010,7 +31016,7 @@ msgstr "the link to the CUI"
 msgid "Legătura cu CUI-ul"
 msgstr "Link to the CUI"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:475
+#: src/features/private-companies/components/profile/company-years-band.tsx:513
 msgid "Legătura îi cere acum ANAF-ului bilanțul pe {year} al acestui CUI; ANAF răspunde cu datele de azi, care pot diferi de cele preluate aici."
 msgstr "The link asks ANAF now for this CUI’s {year} statement; ANAF answers with today’s data, which can differ from what was captured here."
 
@@ -33656,7 +33662,7 @@ msgstr "Metrica"
 msgid "metrică"
 msgstr "metrică"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:231
+#: src/features/private-companies/components/profile/company-years-band.tsx:243
 msgid "MF"
 msgstr "MF"
 
@@ -34335,7 +34341,7 @@ msgid "Most shortcuts work on both Windows/Linux (Ctrl) and macOS (⌘). Some sh
 msgstr "Most shortcuts work on both Windows/Linux (Ctrl) and macOS (⌘). Some shortcuts may conflict with browser defaults."
 
 #. placeholder {0}: statement.holdReason
-#: src/features/private-companies/components/profile/company-years-band.tsx:418
+#: src/features/private-companies/components/profile/company-years-band.tsx:456
 msgid "Motivul înregistrat: {0}"
 msgstr "Recorded reason: {0}"
 
@@ -35361,7 +35367,7 @@ msgstr "No sums across the enterprises: the population is provisional and some a
 msgid "nicio valoare"
 msgstr "no value"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:456
+#: src/features/private-companies/components/profile/company-years-band.tsx:494
 msgid "Nicio valoare a bilanțului nu e disponibilă aici."
 msgstr "No value of the statement is available here."
 
@@ -35377,7 +35383,7 @@ msgstr "No statement values in the data here: turnover, the result and the numbe
 msgid "nicio valoare disponibilă aici"
 msgstr "no value available here"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:310
+#: src/features/private-companies/components/profile/company-years-band.tsx:322
 msgid "nicio valoare disponibilă aici în acest an"
 msgstr "no value available here this year"
 
@@ -38118,7 +38124,7 @@ msgstr "a maximum amount"
 msgid "o sumă minimă"
 msgstr "a minimum amount"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:132
+#: src/features/private-companies/components/profile/company-years-band.tsx:144
 msgid "O valoare estompată și subliniată e publicată de sursă, dar nu intră în cifrele paginii; motivul apare în dreptul ei și sub tabel, la anul ei. O celulă goală: nicio valoare disponibilă aici pentru rând în acel an. O coloană umbrită: ani fără valori disponibile aici — nu neapărat ani fără bilanț."
 msgstr "A faded, underlined value is published by the source but is not in the page's figures; the reason is beside it and, under the table, at its year. An empty cell: no value available here for the line that year. A shaded column: years with no values available here — not necessarily years without a statement."
 
@@ -40657,7 +40663,7 @@ msgstr "Foreign legal persons"
 #~ msgid "Persoanele și părțile necunoscute nu sunt afișate nominal."
 #~ msgstr "Persoanele și părțile necunoscute nu sunt afișate nominal."
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:222
+#: src/features/private-companies/components/profile/company-years-band.tsx:234
 msgid "Personal"
 msgstr "Staff"
 
@@ -43012,7 +43018,7 @@ msgstr "EU reimbursements and pre-financing, outside the 2014–2020 framework"
 msgid "Rand"
 msgstr "Rand"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:369
+#: src/features/private-companies/components/profile/company-years-band.tsx:381
 msgid "rând neînregistrat"
 msgstr "row not recorded"
 
@@ -43027,7 +43033,7 @@ msgid "Rândul „Venituri – total\" al fiecărui buget. Patru bugete separate
 msgstr "Each budget's “Revenue – total” line. Four separate budgets: they are not added together (the transfers between them would be counted twice)."
 
 #. placeholder {0}: line.rowNumber
-#: src/features/private-companies/components/profile/company-years-band.tsx:369
+#: src/features/private-companies/components/profile/company-years-band.tsx:381
 msgid "rândul {0}"
 msgstr "row {0}"
 
@@ -44835,8 +44841,8 @@ msgstr "Rezultat de vot"
 msgid "Rezultat net"
 msgstr "Net result"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:226
-#: src/features/private-companies/components/profile/company-years-band.tsx:446
+#: src/features/private-companies/components/profile/company-years-band.tsx:238
+#: src/features/private-companies/components/profile/company-years-band.tsx:484
 msgid "Rezultat net calculat"
 msgstr "Computed net result"
 
@@ -44868,7 +44874,7 @@ msgstr "Result, {year}"
 #: src/features/landing/components/search/landing-search.tsx:819
 #: src/features/legal/components/legislation-act-finder.tsx:619
 #: src/features/private-companies/components/profile/company-main-activity.tsx:379
-#: src/features/private-companies/components/profile/company-years-band.tsx:220
+#: src/features/private-companies/components/profile/company-years-band.tsx:232
 #: src/features/statistics/components/explorer/dataset-explorer-results.tsx:117
 msgid "Rezultate"
 msgstr "Results"
@@ -49350,7 +49356,7 @@ msgid "Sume în curs de distribuire"
 msgstr "Amounts being distributed"
 
 #: src/features/ngos/organization/components/years-matrix.tsx:57
-#: src/features/private-companies/components/profile/company-years-band.tsx:126
+#: src/features/private-companies/components/profile/company-years-band.tsx:138
 msgid "Sume în lei"
 msgstr "Amounts in lei"
 
@@ -49953,7 +49959,7 @@ msgstr "Comparison table: indicator values for each territory and period."
 msgid "Tabelul arată primele {0} de înregistrări: pentru celelalte, restrânge selecția cu filtrele."
 msgstr "The table shows the first {0} entries: for the rest, narrow the selection with the filters."
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:112
+#: src/features/private-companies/components/profile/company-years-band.tsx:124
 msgid "Tabelul bilanțurilor"
 msgstr "The statements table"
 
@@ -54051,7 +54057,7 @@ msgid "Valorificarea unor bunuri"
 msgstr "Sale of certain assets"
 
 #. placeholder {0}: lines.length
-#: src/features/private-companies/components/profile/company-years-band.tsx:364
+#: src/features/private-companies/components/profile/company-years-band.tsx:376
 msgid "Valorile acestui an provin din {0} fișiere MF publicate separat; fiecare indicator se verifică în fișierul lui:"
 msgstr "This year's values come from {0} MF files published separately; check each indicator in its own file:"
 
@@ -54096,7 +54102,7 @@ msgstr "published values admitted; net result held"
 #~ msgid "Valorile publicate de sursă, pe bilanțuri, cu starea fiecăreia:"
 #~ msgstr "The values the source published, by statement, each with its state:"
 
-#: src/features/private-companies/components/profile/company-years-band.tsx:120
+#: src/features/private-companies/components/profile/company-years-band.tsx:132
 msgid "Valorile publicate în bilanțuri, pe ani"
 msgstr "The values published in the statements, by year"
 

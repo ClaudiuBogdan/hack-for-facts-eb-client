@@ -1,10 +1,10 @@
-import type { PrivateCompanyProfile } from '@/schemas/private-company'
+import type { PrivateCompanyProfile, PrivateCompanyStatementFiles } from '@/schemas/private-company'
 import type { CompanyMainActivityHistoryKind, CompanyMainActivityHistoryResult } from '@/schemas/private-company-main-activity'
 import type { CompanyResolveRequest, CompanyResolveResult } from '@/schemas/private-company-search'
 import { isPrivateCompanyMockEnabled } from '../lib/mock-mode'
 import { assertRegistryScope } from './company-registry-errors'
 import { fetchPrivateCompanyProfileMock } from './private-company-api.mock'
-import { fetchCompanyMainActivityHistoryLive, fetchPrivateCompanyProfileLive, resolveCompaniesLive } from './private-company-api.live'
+import { fetchCompanyMainActivityHistoryLive, fetchCompanyStatementFilesLive, fetchPrivateCompanyProfileLive, resolveCompaniesLive } from './private-company-api.live'
 import { resolveCompaniesMock } from './private-company-search-api.mock'
 
 export type { CompanyResolveHit, CompanyResolveResult } from '@/schemas/private-company-search'
@@ -18,6 +18,15 @@ export async function fetchPrivateCompanyProfile(
     return fetchPrivateCompanyProfileMock(cui)
   }
   return fetchPrivateCompanyProfileLive(cui, signal)
+}
+
+/**
+ * A company's Ministry statements' file lines, read when a reader opens a Ministry year. The mock profiles were
+ * never read with file lines, so mock mode serves none (no year lists files), never invented ones.
+ */
+export async function fetchCompanyStatementFiles(cui: string, signal?: AbortSignal): Promise<readonly PrivateCompanyStatementFiles[]> {
+  if (isPrivateCompanyMockEnabled()) return []
+  return fetchCompanyStatementFilesLive(cui, signal)
 }
 
 /**

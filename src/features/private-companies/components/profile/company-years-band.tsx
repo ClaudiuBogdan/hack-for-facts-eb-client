@@ -4,7 +4,8 @@ import { Trans } from '@lingui/react/macro'
 import { ArrowUpRight, TriangleAlert, X } from 'lucide-react'
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
-import type { PrivateCompanyStatementPublisher } from '@/schemas/private-company'
+import type { PrivateCompanyStatementFiles, PrivateCompanyStatementPublisher } from '@/schemas/private-company'
+import { useCompanyStatementFiles } from '../../hooks/use-company-statement-files'
 import { count, moneyCell } from '../../lib/company-profile-format'
 import type { CompanyProfileModel, StatementValues } from '../../lib/company-profile-model'
 import {
@@ -55,7 +56,18 @@ const RECENT_YEARS = 6
  * figures and why, and where it was published. The admission policy and how
  * to read the cells sit behind the corner's info button.
  */
-export function CompanyYearsBand({ model, index, last = false }: { readonly model: CompanyProfileModel; readonly index?: string; readonly last?: boolean }) {
+export function CompanyYearsBand({
+  model,
+  cui = model.profile.cui ?? undefined,
+  index,
+  last = false,
+}: {
+  readonly model: CompanyProfileModel
+  /** Whose Ministry files an opened year reads: the page's own CUI. None: no files are read. */
+  readonly cui?: string
+  readonly index?: string
+  readonly last?: boolean
+}) {
   const [chosen, setChosen] = useState<number | null>(null)
   const [allRows, setAllRows] = useState(false)
   const [allYears, setAllYears] = useState(false)
@@ -206,7 +218,7 @@ export function CompanyYearsBand({ model, index, last = false }: { readonly mode
           ) : null}
         </div>
       ) : null}
-      {open ? <StatementDetail statement={open} locale={locale} onClose={close} className="mt-6" /> : null}
+      {open ? <StatementDetail cui={cui} statement={open} locale={locale} onClose={close} className="mt-6" /> : null}
 
     </ProfileBand>
   )
@@ -357,7 +369,7 @@ function ValueCell({
  * supplied cells, anchor first, with the indicators it gave, so each value can
  * be checked in its own file. The names are the statement's own.
  */
-function ContributingFiles({ lines }: { readonly lines: NonNullable<NonNullable<StatementValues['source']>['contributingSources']> }) {
+function ContributingFiles({ lines }: { readonly lines: PrivateCompanyStatementFiles['lines'] }) {
   return (
     <div className="col-span-2 mt-2 text-xs text-muted-foreground sm:col-span-3">
       <p>
@@ -385,12 +397,38 @@ function ContributingFiles({ lines }: { readonly lines: NonNullable<NonNullable<
   )
 }
 
+/**
+ * A Ministry statement's file lines, read when its year is opened, not with the profile (trim step 2a, owner,
+ * 28 November 2026). Nothing while they are read — most statements came from one file, and then nothing is added —
+ * the list when the statement came from more than one, and only beside the statement they belong to (the read's
+ * link is the profile's own). A failed read says so, with a way to read again: silence would hide that half of
+ * the values cannot be checked in the linked file.
+ */
+function StatementFiles({ cui, year, sourceUrl }: { readonly cui: string; readonly year: number; readonly sourceUrl: string | null }) {
+  const files = useCompanyStatementFiles(cui, true)
+  if (files.isError) {
+    return (
+      <p className="col-span-2 mt-2 text-xs text-muted-foreground sm:col-span-3">
+        <Trans>Fișierele MF ale acestui an nu s-au încărcat.</Trans>{' '}
+        <button type="button" onClick={() => void files.refetch()} className="font-medium text-foreground underline-offset-4 hover:underline">
+          <Trans>Încearcă din nou</Trans>
+        </button>
+      </p>
+    )
+  }
+  const entry = files.data?.find((statementFiles) => statementFiles.fiscalYear === year)
+  if (!entry || entry.lines.length < 2 || entry.sourceUrl !== sourceUrl) return null
+  return <ContributingFiles lines={entry.lines} />
+}
+
 function StatementDetail({
+  cui,
   statement,
   locale,
   onClose,
   className,
 }: {
+  readonly cui: string | undefined
   readonly statement: StatementValues
   readonly locale: 'ro' | 'en'
   readonly onClose: () => void
@@ -468,7 +506,7 @@ function StatementDetail({
           <ArrowUpRight className="size-3.5" aria-hidden="true" />
         </a>
       ) : null}
-      {source?.contributingSources && source.contributingSources.length > 1 ? <ContributingFiles lines={source.contributingSources} /> : null}
+      {source?.urlKind === 'mfp_resource' && cui ? <StatementFiles cui={cui} year={year} sourceUrl={source.url} /> : null}
       {source?.url && source.urlKind === 'anaf_statement' ? (
         // ANAF's link asks it again for this CUI and year: today's answer, not the copy read here.
         <p className="col-span-2 mt-2 text-xs text-muted-foreground sm:col-span-3">

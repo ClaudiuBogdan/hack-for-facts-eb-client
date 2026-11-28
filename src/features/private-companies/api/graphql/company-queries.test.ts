@@ -10,7 +10,9 @@ import {
   COMPANY_PROFILE_QUERY_WITHOUT_MAIN,
   COMPANY_PROFILE_QUERY_WITHOUT_SELECTION,
   COMPANY_PROFILE_QUERY_WITHOUT_SELECTION_OR_MAIN,
+  COMPANY_STATEMENT_FILES_QUERY,
   companyProfileResponseSchema,
+  companyStatementFilesResponseSchema,
 } from './company-queries'
 
 const DOCUMENTS = {
@@ -101,8 +103,9 @@ const NEVER_ASKED = [
   'companyFinancials.years.source.statementProfileHash',
   'companyFinancials.years.source.metricRuleVersion',
   'companyFinancials.years.source.selectionBasis',
-  'companyFinancials.years.source.contributingSources.sourceSnapshotId',
   'companyFinancials.years.qualification.holdDrift',
+  // Read when a Ministry year opens (trim step 2a, 28 November 2026), by CompanyStatementFiles.
+  'companyFinancials.years.source.contributingSources',
 ]
 
 /** What the page's gates and bands read; most are nullable in the raw schema, so only this list keeps them asked. */
@@ -119,7 +122,6 @@ const ALWAYS_ASKED = [
   'companyFinancials.years.reportingForm',
   'companyFinancials.years.source.url',
   'companyFinancials.years.source.urlKind',
-  'companyFinancials.years.source.contributingSources.indicators.name',
   ...['assessment', 'reason', 'releaseId', 'policyVersion', 'policySha256', 'policyApprovedOn', 'evaluatorVersion', 'netResultStatus', 'netResult', 'holdReason'].map(
     (field) => `companyFinancials.years.qualification.${field}`,
   ),
@@ -172,5 +174,24 @@ describe('the CompanyProfile document', () => {
       uatSirutaCode: { value: true, basis: true },
       statusCode: { value: true, basis: true },
     })
+  })
+})
+
+describe('the CompanyStatementFiles document (trim step 2a)', () => {
+  it('asks every key its raw schema requires, and each year’s own link beside its files', () => {
+    const selection = selectionOf(COMPANY_STATEMENT_FILES_QUERY)
+    expect(unselectedRequired(companyStatementFilesResponseSchema, selection, 'data')).toEqual([])
+    expect(pathsOf(selection)).toEqual(
+      expect.arrayContaining([
+        'companyFinancials.years.year',
+        'companyFinancials.years.source.url',
+        'companyFinancials.years.source.contributingSources.rowNumber',
+        'companyFinancials.years.source.contributingSources.url',
+        'companyFinancials.years.source.contributingSources.indicators.code',
+        'companyFinancials.years.source.contributingSources.indicators.name',
+      ]),
+    )
+    // Nothing of the statement itself: its values come with the profile.
+    expect(pathsOf(selection).filter((path) => /summary|qualification|turnover|netProfit/u.test(path))).toEqual([])
   })
 })
